@@ -24,6 +24,7 @@ AA 21 01 0C 01 01 [hi] [lo] ...
 
 | Service ID | Name | Description |
 |------------|------|-------------|
+| `0x01-20` | Notifications | Calendar/email/app notifications |
 | `0x04-20` | Display Wake | Activate display |
 | `0x06-20` | Teleprompter | Text display, scripts |
 | `0x07-20` | Dashboard | Widget data |
@@ -35,6 +36,13 @@ AA 21 01 0C 01 01 [hi] [lo] ...
 | `0x11-20` | Conversate (alt) | Alternative conversate ID |
 | `0x20-20` | Commit | Confirm/commit changes |
 | `0x81-20` | Display Trigger | Wake/activate display |
+
+### File Services (0x74xx characteristics)
+
+| Service ID | Name | Description |
+|------------|------|-------------|
+| `0xC4-00` | File Command | File check, start, end commands |
+| `0xC5-00` | File Data | Raw file/JSON data transfer |
 
 ### Service ID Breakdown
 
@@ -89,6 +97,35 @@ Widget display (calendar, weather, etc.):
 10-XX         msg_id
 1A-XX         Widget data
 ```
+
+### 0xC4-00 (File Command)
+
+File transfer control on 0x74xx characteristics:
+
+| Payload | Command | Description |
+|---------|---------|-------------|
+| 93-byte header | FILE_CHECK | Announce file with CRC32C checksum |
+| `0x01` | START | Begin data transfer |
+| `0x02` | END | Complete transfer |
+
+FILE_CHECK header structure:
+```
+[4] mode      - 0x00010000 (little-endian)
+[4] size      - len(data) * 256
+[4] checksum  - (CRC32C << 8) & 0xFFFFFFFF
+[1] extra     - (CRC32C >> 24) & 0xFF
+[80] filename - Null-padded string
+```
+
+### 0xC5-00 (File Data)
+
+Raw file content transfer:
+
+```
+[json_bytes]  UTF-8 JSON payload
+```
+
+Used for notifications (JSON) and potentially other file types.
 
 ## Service Discovery
 

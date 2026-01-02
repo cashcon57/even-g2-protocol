@@ -13,6 +13,8 @@ Base UUID: 00002760-08c2-11e1-9073-0e8ac72e{xxxx}
 | `5402` | `00002760-08c2-11e1-9073-0e8ac72e5402` | Notify (Responses) |
 | `5450` | `00002760-08c2-11e1-9073-0e8ac72e5450` | Service Declaration |
 | `6402` | `00002760-08c2-11e1-9073-0e8ac72e6402` | Display Rendering |
+| `7401` | `00002760-08c2-11e1-9073-0e8ac72e7401` | File Write (Notifications) |
+| `7402` | `00002760-08c2-11e1-9073-0e8ac72e7402` | File Notify (Responses) |
 
 ## ATT Handles
 
@@ -21,7 +23,19 @@ Base UUID: 00002760-08c2-11e1-9073-0e8ac72e{xxxx}
 | `0x0842` | 5401 | Write | Commands (Phone -> Glasses) |
 | `0x0844` | 5402 | Notify | Responses (Glasses -> Phone) |
 | `0x0864` | 6402 | Write | Display/Rendering commands |
-| `0x0884` | ? | Notify | Secondary control? |
+| `0x0874` | 7401 | Write | File transfer (Notifications) |
+| `0x0876` | 7402 | Notify | File transfer responses |
+| `0x0884` | ? | Notify | Secondary control (audio?) |
+
+## Channel Architecture
+
+The G2 uses multiple characteristic pairs for different functions:
+
+| Channel | Write | Notify | Purpose |
+|---------|-------|--------|---------|
+| **Control** | 0x5401 | 0x5402 | Auth, protobuf commands (teleprompter, dashboard) |
+| **Rendering** | 0x6402 | - | Display positioning, binary commands |
+| **File** | 0x7401 | 0x7402 | File transfers (notifications as JSON) |
 
 ## Characteristic Properties
 
@@ -39,6 +53,16 @@ Base UUID: 00002760-08c2-11e1-9073-0e8ac72e{xxxx}
 - **Properties**: Write Without Response
 - **Usage**: 204-byte rendering packets
 - **Format**: Binary display commands
+
+### File Write Characteristic (0x7401)
+- **Properties**: Write Without Response
+- **Usage**: File transfer commands and data (notifications)
+- **Services**: 0xC4-00 (commands), 0xC5-00 (data)
+
+### File Notify Characteristic (0x7402)
+- **Properties**: Notify
+- **Usage**: File transfer responses (cache status, errors)
+- **CCCD**: Must enable notifications (write 0x0100)
 
 ## Connection Parameters
 
